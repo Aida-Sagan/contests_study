@@ -1,0 +1,83 @@
+#include <iostream>
+#include <vector>
+#include <stack>
+
+using std::vector;
+using std::stack;
+using std::istream;
+using std::cin;
+using std::cout;
+using std::endl;
+
+/*
+
+1. Перед public: желательно ставить перевод строки, а ещё разделять конструктор/деструктор и остальные методы.
+2. Давайте не будем использовать имена локальных переменных и аргументов функций с большой буквы (N, S).
+3. Почему нельзя было сразу считать stream >> MatrixAdjacency[i][j]? 
+4. u32 answer = 0, vertex; — vertex можно было сразу объявить в 52 строке: u32 vertex = stack.top();
+5. stack.empty() != true, passedVertex[i] == false — так условия с bool не пишут, тут while (!stack.empty) и во втором случае  тоже !passedVertex[i].
+В списке инициализации после ":" и "," ставятся пробелы
+*/
+using u32 = uint32_t;
+
+class TGraph {
+private:
+    u32 CountVert;
+    vector<vector<u32>> MatrixAdjacency;
+    
+public:
+    TGraph();
+    TGraph(u32 n);
+
+    void ReadFromStream(istream& stream);
+    u32 ConnectedComponentsNumber(const u32 s) const;
+};
+
+TGraph::TGraph()
+    : CountVert(0)
+    , MatrixAdjacency()
+{}
+
+TGraph::TGraph(u32 n)
+    : CountVert(n)
+    , MatrixAdjacency(n, vector<u32>(n, 0))
+{}
+
+void TGraph::ReadFromStream(istream& stream) {
+    for (u32 i = 0; i < CountVert; ++i) {
+        for (u32 j = 0; j < CountVert; ++j) {
+            stream >> MatrixAdjacency[i][j];
+        }
+    }
+}
+
+u32 TGraph::ConnectedComponentsNumber(const u32 s) const {
+    u32 answer = 0;
+    stack<u32> stack;
+    vector<bool> passedVertex(CountVert, false);
+    stack.push(s);
+    passedVertex[s] = true;
+    while (!stack.empty()) {
+        u32 vertex = stack.top();
+        stack.pop();
+        answer++;
+        for (u32 i = 0; i < CountVert; ++i) {
+            if (MatrixAdjacency[vertex][i] == 1 && !passedVertex[i]) {
+                stack.push(i);
+                passedVertex[i] = true;
+            }
+        }
+    }
+    return answer;
+}
+
+
+int main() {
+    u32 n, s;
+    cin >> n >> s;
+
+    TGraph graph(n);
+    graph.ReadFromStream(cin);
+    cout << graph.ConnectedComponentsNumber(s - 1) << endl;
+    return 0;
+}
