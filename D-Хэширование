@@ -1,0 +1,85 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <string>
+#include <list>
+
+using std::vector;
+using std::list;
+using std::cout;
+using std::endl;
+using std::cin;
+
+using ui64 = uint64_t;
+
+const ui64 SIZE_ALPH = 27;
+const ui64 MOD = 100000;
+
+class Hash {
+ public:
+    Hash() : HashField(vector<list<std::string>>(MOD)) {}
+
+    void Insert(const std::string& str);
+    void Delete(const std::string& str);
+    bool Exists(const std::string& str) const;
+
+ private:
+    ui64 HashFun(const std::string& str) const;
+
+ private:
+    vector<list<std::string>> HashField;
+};
+
+ui64 Hash::HashFun(const std::string& str) const {
+    ui64 x = 0, h = 0, m = 1;
+    for (ui64 i = 0; i < str.size(); ++i) {
+        x += str[i] - 'a' + 1;
+        h = (h + m * x) % MOD;
+        m = (m * SIZE_ALPH) % MOD;
+    }
+    return h;
+}
+
+void Hash::Insert(const std::string& str) {
+    ui64 h = HashFun(str);
+    for (const std::string& s : HashField[h]) {
+        if (s == str) {
+            return;
+        }
+    }
+    HashField[h].push_back(str);
+}
+
+void Hash::Delete(const std::string& str) {
+    ui64 h = HashFun(str);
+    HashField[h].remove(str);
+}
+
+bool Hash::Exists(const std::string& str) const {
+    ui64 h = HashFun(str);
+    for (const std::string& s : HashField[h]) {
+        if (s == str) {
+            return true;
+        }
+    }
+    return false;
+}
+
+int main() {
+    Hash hash;
+    char command;
+    cin >> command;
+    while (command != '#') {
+        std::string str;
+        cin >> str;
+        if (command == '+') {
+            hash.Insert(str);
+        } else if (command == '-') {
+            hash.Delete(str);
+        } else if (command == '?') {
+            cout << (hash.Exists(str) ? "YES" : "NO") << endl;
+        }
+        cin >> command;
+    }
+    return 0;
+}
