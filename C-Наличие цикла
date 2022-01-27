@@ -1,0 +1,81 @@
+#include <iostream>
+#include <vector>
+
+using std::cin;
+using std::cout;
+using std::endl;
+using std::vector;
+using std::istream;
+
+using ui32 = uint32_t;
+
+class TGraph {
+private:
+    ui32 NumberVertices;
+    vector<vector<ui32>> AdjacencyList;
+
+    bool DepthFirstSearch(ui32 vertex, vector<ui32>& colors) const;
+
+public:
+    TGraph();
+    TGraph(ui32 n);
+
+    void ReadFromStream(istream& stream);
+    bool HasCycle() const;
+};
+
+TGraph::TGraph()
+    : NumberVertices(0)
+    , AdjacencyList()
+{
+}
+
+TGraph::TGraph(ui32 n)
+    : NumberVertices(n)
+    , AdjacencyList(n, vector<ui32>(n, 0))
+{
+}
+
+bool TGraph::DepthFirstSearch(ui32 vertex, vector<ui32>& colors) const {
+    colors[vertex] = 1;
+    for (ui32 i = 0; i < NumberVertices; ++i) {
+        int elem = AdjacencyList[vertex][i];
+        if (elem == 1 && colors[i] == 0) {
+            if (DepthFirstSearch(i, colors) == true) {
+                return true;
+            }
+        } else if (elem == 1 && colors[i] == 1) {
+            return true;
+        }
+    }
+    colors[vertex] = 2;
+    return false;
+}
+
+void TGraph::ReadFromStream(istream& stream) {
+    for (ui32 i = 0; i < NumberVertices; ++i) {
+        for (ui32 j = 0; j < NumberVertices; ++j) {
+            stream >> AdjacencyList[i][j];
+        }
+    }
+}
+
+bool TGraph::HasCycle() const {
+    vector<ui32> colors(NumberVertices, 0);
+    for (ui32 i = 0; i < NumberVertices; ++i) {
+        if (DepthFirstSearch(i, colors)) {
+           return true;
+        }
+    }
+    return false; 
+}
+
+int main() {
+    ui32 n;
+    cin >> n;
+
+    TGraph graph(n);
+    graph.ReadFromStream(cin);
+    cout << graph.HasCycle() << endl;
+    return 0;
+}
