@@ -1,0 +1,74 @@
+#include <iostream>
+#include <memory>
+
+class Node {
+ public:
+    explicit Node(int32_t x);
+
+    int32_t el_;
+    std::shared_ptr<Node> left_;
+    std::shared_ptr<Node> right_;
+};
+
+Node::Node(int32_t x) : el_(x), left_(nullptr), right_(nullptr) {
+}
+
+class Tree {
+ public:
+    Tree();
+
+    void AddUniqueNode(int32_t x);
+    uint32_t GetHeight() const;
+
+ private:
+    std::shared_ptr<Node> root_ptr_;
+
+    std::shared_ptr<Node> AddUniqueNodeHelper(std::shared_ptr<Node> node_ptr,
+                                                                    int32_t x);
+    uint32_t GetHeightHelper(std::shared_ptr<Node> node_ptr) const;
+};
+
+Tree::Tree() : root_ptr_(nullptr) {
+}
+
+void Tree::AddUniqueNode(int32_t x) {
+    root_ptr_ = AddUniqueNodeHelper(root_ptr_, x);
+}
+
+uint32_t Tree::GetHeight() const {
+    return GetHeightHelper(root_ptr_);
+}
+
+std::shared_ptr<Node> Tree::AddUniqueNodeHelper(std::shared_ptr<Node> node_ptr,
+                                                                    int32_t x) {
+    if (!node_ptr) {
+        return std::shared_ptr<Node>(new Node(x));
+    }
+    if (node_ptr->el_ > x) {
+        node_ptr->left_ = AddUniqueNodeHelper(node_ptr->left_, x);
+    } else if (node_ptr->el_ < x) {
+        node_ptr->right_ = AddUniqueNodeHelper(node_ptr->right_, x);
+    }
+    return node_ptr;
+}
+
+uint32_t Tree::GetHeightHelper(std::shared_ptr<Node> node_ptr) const {
+    if (!node_ptr) {
+        return 0;
+    }
+    return 1 + std::max(GetHeightHelper(node_ptr->left_),
+                        GetHeightHelper(node_ptr->right_));
+}
+
+int main() {
+    Tree tree;
+    int32_t var;
+    std::cin >> var;
+    while (var) {
+        tree.AddUniqueNode(var);
+        std::cin >> var;
+    }
+    std::cout << tree.GetHeight() << std::endl;
+    return 0;
+}
+
