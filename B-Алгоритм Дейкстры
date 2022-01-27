@@ -1,0 +1,119 @@
+#include <iostream>
+#include <vector>
+#include <cmath>
+#include <limits>
+#include <utility>
+#include <algorithm>
+
+using std::vector;
+using std::istream;
+using std::pair;
+using std::make_pair;
+using std::numeric_limits;
+using std::cin;
+using std::cout;
+using std::endl;
+
+/*
+2. Почему не занести чтение n и m в функции ReadGraph и AddShortRoads (и почему Add, а не Read)?    
+*/
+class Graph {
+ private:
+    uint32_t vertices_number_;
+    vector<pair<int32_t, int32_t>> coordinates_;
+    vector<vector<pair<uint32_t, float>>> short_roads_;
+
+    float Distance(uint32_t u, uint32_t v) const;
+
+ public:
+    explicit Graph(uint32_t n);
+    void ReadGraph(istream& stream);
+    void ReadShortRoads(istream& stream);
+
+    float Dijkstra(uint32_t a, uint32_t b) const;
+};
+
+Graph::Graph(uint32_t n) 
+        : vertices_number_(n) 
+        , coordinates_(n)
+        , short_roads_(n) 
+{
+}
+
+void Graph::ReadGraph(istream& stream) {
+    uint32_t x, y;
+    for (uint32_t i = 0; i < vertices_number_; i++) {
+        stream >> x >> y;
+        coordinates_[i] = make_pair(x, y);
+    }
+}
+
+void Graph::ReadShortRoads(istream& stream) {
+    uint32_t a, b;
+    float d;
+    uint32_t m;
+    stream >> m;
+    for (uint32_t i = 0; i < m; i++) {
+        stream >> a >> b >> d;
+        short_roads_[a - 1].emplace_back(b - 1, d);
+        short_roads_[b - 1].emplace_back(a - 1, d); 
+    }
+}
+
+float Graph::Dijkstra(uint32_t a, uint32_t b) const {
+    a--;
+    b--;
+    vector<float> dist(vertices_number_, numeric_limits<float>::max());
+    vector<bool> visited(vertices_number_, false);
+
+    dist[a] = 0;
+    float min, u_to_v;
+    uint32_t u;
+    for (uint32_t count = 0; count < vertices_number_ - 1; count++) {
+        min = numeric_limits<float>::max();
+        u = 0;
+        for (uint32_t v = 0; v < vertices_number_; v++) {
+            if (visited[v] == false && dist[v] <= min) {
+                min = dist[v];
+                u = v;
+            }
+        }
+        visited[u] = true;
+        for (uint32_t v = 0; v < vertices_number_; v++) {
+            u_to_v = Distance(u, v);
+            if (!visited[v] && dist[u] < numeric_limits<float>::max() && dist[u] + u_to_v < dist[v]) {
+                dist[v] = dist[u] + u_to_v;
+            }
+        }
+    }
+    return dist[b];
+}
+
+float Graph::Distance(uint32_t u, uint32_t v) const {
+    for (const auto& el : short_roads_[u]) {
+        if (el.first == v) {
+            return el.second;
+        }
+    }
+    float one, two;
+    one = coordinates_[u].first - coordinates_[v].first;
+    one *= one;
+    two = coordinates_[u].second - coordinates_[v].second;
+    two *= two;
+    return sqrt(one + two);
+}
+
+int main() {
+    uint32_t n;
+    cin >> n;
+
+    Graph graph(n);
+    graph.ReadGraph(cin);
+    graph.ReadShortRoads(cin);
+
+    uint32_t a, b;
+    cin >> a >> b;
+    cout << graph.Dijkstra(a, b) << endl;
+
+    return 0;
+}
