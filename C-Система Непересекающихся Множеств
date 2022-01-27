@@ -1,0 +1,84 @@
+#include <iostream>
+#include <vector>
+
+using std::vector;
+using std::cin;
+using std::cout;
+using std::endl;
+/*
+1. Не перенос строки, а пробел перед private, как перед public. Посмотрите стайл гайд.
+2. Тут же гугловый стайл гайд используется, почему стиль списка инициализации, как в яндексовом?
+3. edges_number_ не используется
+
+*/
+class DisjointSetUnion {
+ private:
+    uint32_t vertices_number_;
+    mutable vector<uint32_t> parents_;
+    vector<uint32_t> size_;
+    
+ public:
+    explicit DisjointSetUnion(uint32_t n);
+    uint32_t FindSet(uint32_t v) const;
+    uint32_t Count(uint32_t v) const;   
+    void UnionSets(uint32_t x, uint32_t y);
+};
+
+DisjointSetUnion::DisjointSetUnion(uint32_t n)
+    : vertices_number_(n), 
+      parents_(n), 
+      size_(n, 1) 
+{
+    for (uint32_t i = 0; i < vertices_number_; ++i) {
+        parents_[i] = i;
+    }
+}
+
+uint32_t DisjointSetUnion::FindSet(uint32_t v) const {
+    if (parents_[v] == v) {
+        return v;
+    }
+    parents_[v] = FindSet(parents_[v]);
+    return parents_[v];
+}
+
+uint32_t DisjointSetUnion::Count(uint32_t v) const {
+    parents_[v] = FindSet(parents_[v]);
+    return size_[parents_[v]];
+}
+
+void DisjointSetUnion::UnionSets(uint32_t x, uint32_t y) {
+    uint32_t a = FindSet(x);
+    uint32_t b = FindSet(y);
+    if (a != b) {
+        if (size_[a] <= size_[b]) {
+            parents_[a] = b;
+            size_[a] += size_[b];
+            size_[b] = size_[a];
+        } else {
+            parents_[b] = a;
+            size_[b] += size_[a];
+            size_[a] = size_[b];
+        }
+    }
+}
+
+int main() {
+    uint32_t n, m;
+    cin >> n >> m;
+    DisjointSetUnion dsu(n);
+
+    uint32_t k = 0;
+    uint32_t x, y;
+    for (uint32_t i = 0; i < m; ++i) {
+        cin >> x >> y;
+        k++;
+        dsu.UnionSets(x, y);
+        if (dsu.Count(0) == n) {
+            break;
+        }
+    }
+    cout << k << endl;
+
+    return 0;
+}
