@@ -1,0 +1,111 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+
+using std::vector;
+using std::istream;
+using std::queue;
+using std::cin;
+using std::cout;
+using std::endl;
+
+using u32 = uint32_t;
+
+class TGraph {
+private:
+    u32 CountVert;
+    vector<vector<u32>> MatrixAdjacency;
+    vector<u32> Exits;
+public:
+    TGraph();
+    TGraph(u32 N);
+    void ReadExits(istream& stream, u32 K);
+    void ReadTunnels(istream& stream, u32 M);
+    vector<u32> BFS(const vector<u32>& startVertices) const; 
+};
+
+TGraph::TGraph(): 
+    CountVert(0), 
+    MatrixAdjacency(), 
+    Exits()
+{}
+
+TGraph::TGraph(u32 N): 
+    CountVert(N), 
+    MatrixAdjacency(N, vector<u32>(0, 0)), 
+    Exits(N, 0)
+{}
+
+void TGraph::ReadExits(istream& stream, u32 K) {
+    vector<u32> array(K);
+    for (u32 i = 0; i < K; ++i) {
+        stream >> array[i];
+        u32 exit = array[i];
+        Exits[exit - 1] = 1;
+    }
+}
+
+void TGraph::ReadTunnels(istream& stream, u32 M) {
+    u32 i, j;
+    for (u32 k = 0; k < M; ++k) {
+        stream >> i >> j;
+        MatrixAdjacency[i - 1].push_back(j - 1);
+        MatrixAdjacency[j - 1].push_back(i - 1);
+    }
+}
+
+vector<u32> TGraph::BFS(const vector<u32>& startVertices) const {
+    vector<u32> answer(CountVert, 0);
+    vector<u32> minimum(CountVert, CountVert);
+    queue<u32> q;
+    for (u32 i = 0; i < CountVert; ++i) {
+        vector<bool> visited(CountVert, false);
+        u32 vertex = startVertices[i];
+        if (Exits[vertex] == 1) {
+            minimum[vertex] = 0;
+            q.push(vertex);
+            visited[vertex] = true;
+            while (!q.empty()) {
+                u32 v = q.front();
+                q.pop();
+                for (u32 j = 0; j < MatrixAdjacency[v].size(); ++j) {
+                    u32 to = MatrixAdjacency[v][j];
+                    if (Exits[to] == 1) {
+                        visited[to] = true;
+                    }
+                    if (!visited[to]) {
+                        visited[to] = true;
+                        q.push(to);
+                        answer[to] = answer[v] + 1;
+                        if (answer[to] < minimum[to]) {
+                            minimum[to] = answer[to];
+                        }
+                    } 
+                }
+            }
+        }
+    }
+    return minimum;
+}
+
+
+int main() {
+    u32 N, K, M;
+    cin >> N;
+    TGraph graph(N);
+    vector<u32> startVertices(N), answer(N);
+    cin >> K;
+    graph.ReadExits(cin, K);
+    cin >> M;
+    graph.ReadTunnels(cin, M);
+    
+    for (u32 i = 0; i < N; ++i) {
+        startVertices[i] = i;
+    }
+    answer = graph.BFS(startVertices);
+    for (u32 i = 0; i < N; ++i) {
+        cout << answer[i] << ' ';
+    }
+    cout << endl;
+    return 0;
+}
