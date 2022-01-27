@@ -1,0 +1,81 @@
+#include <iostream>
+#include <vector>
+#include <limits>
+#include <set>
+
+using std::vector;
+using std::istream;
+using std::pair;
+using std::make_pair;
+using std::numeric_limits;
+using std::set;
+using std::cin;
+using std::cout;
+using std::endl;
+
+class Graph { 
+ public:
+    explicit Graph(uint64_t n);
+    void ReadGraph(istream& stream, uint64_t k);
+
+    int64_t Dijkstra(uint64_t a, uint64_t b) const;
+
+ private:
+    uint64_t vertices_number_;
+    vector<vector<pair<uint64_t, uint64_t>>> edges_;
+};
+
+Graph::Graph(uint64_t n) : vertices_number_(n) , edges_(n) {
+}
+
+
+void Graph::ReadGraph(istream& stream, uint64_t k) {
+    uint64_t a, b, l;
+    stream >> k;
+
+    for (uint64_t i = 0; i < k; i++) {
+        stream >> a >> b >> l;
+        edges_[a - 1].push_back(make_pair(b - 1, l));
+        edges_[b - 1].push_back(make_pair(a - 1, l));
+    }
+}
+
+int64_t Graph::Dijkstra(uint64_t a, uint64_t b) const {
+    a--;
+    b--;
+    vector<uint64_t> dist(vertices_number_, numeric_limits<uint64_t>::max());
+    set<pair<uint64_t, uint64_t>> q;
+    dist[a] = 0;
+    q.insert(make_pair(dist[a], a));
+    while (!q.empty()) {
+        uint64_t start = q.begin() -> second;
+        q.erase(q.begin());
+        for (uint64_t i = 0; i < edges_[start].size(); i++) {
+            uint64_t to = edges_[start][i].first;
+            uint64_t len = edges_[start][i].second;
+            if (dist[start] + len < dist[to]) {
+                q.erase(make_pair(dist[to], to));
+                dist[to] = dist[start] + len;
+                q.insert(make_pair(dist[to], to));
+            }
+        }
+    }
+    if (dist[b] == numeric_limits<uint64_t>::max()) {
+        return -1;
+    }
+    return dist[b];
+}
+
+int main() {
+    uint64_t n, k = 0;
+    cin >> n;
+
+    Graph graph(n);
+    graph.ReadGraph(cin, k);
+
+    uint64_t a, b;
+    cin >> a >> b;
+    cout << graph.Dijkstra(a, b) << endl;
+
+    return 0;
+}
