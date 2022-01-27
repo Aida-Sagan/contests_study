@@ -1,0 +1,49 @@
+#include <iostream>
+#include <vector>
+
+class Wires {
+ public:
+    explicit Wires(uint32_t n, std::istream& stream);
+
+    uint32_t MaxEqualSegments(uint32_t k);
+
+ private:
+    std::vector<uint32_t> v_;
+};
+
+Wires::Wires(uint32_t n, std::istream& stream) : v_(n) {
+    for (uint32_t i = 0; i < n; i++) {
+        stream >> v_[i];
+    }
+}
+
+uint32_t Wires::MaxEqualSegments(uint32_t k) {
+    uint32_t left = 1;
+    uint32_t right = 10000000;
+    uint32_t res = 0;
+    while (right >= left) {
+        uint32_t mid = (left + right) / 2;
+        uint32_t segments = 0;
+        for (uint32_t i = 0; i < v_.size(); i++) {
+            segments += v_[i] / mid;
+        }
+        if (segments < k) {
+            right = mid - 1;
+        } else {
+            if (mid > res) {
+                res = mid;
+            }
+            left = mid + 1;
+        }
+    }
+    return res;
+}
+
+int main() {
+    uint32_t n, k;
+    std::cin >> n >> k;
+    Wires wires(n, std::cin);
+    std::cout << wires.MaxEqualSegments(k) << std::endl;
+    return 0;
+}
+
