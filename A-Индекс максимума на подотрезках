@@ -1,0 +1,82 @@
+#include <iostream>
+#include <vector>
+
+using std::istream;
+using std::vector;
+using std::cin;
+using std::cout;
+using std::endl;
+
+using ui32 = uint32_t;
+
+class SubsegmentTree {
+ private:
+    ui32 n_;
+    vector<ui32> arr_;
+    vector<ui32> index_;
+
+    void Create(ui32 p, ui32 t_left, ui32 t_right);
+
+    ui32 MaxIndexFun(ui32 p, ui32 t_left, ui32 t_right,
+                                               ui32 l, ui32 r) const;
+ public:
+    explicit SubsegmentTree(ui32 n, istream& stream);
+
+    ui32 MaxIndex(ui32 left, ui32 right) const;
+};
+
+SubsegmentTree::SubsegmentTree(ui32 n, istream& stream) : n_(n), arr_(n),
+                                                             index_(n * 4) {
+    for (ui32 i = 0; i < n; ++i) {
+        stream >> arr_[i];
+    }
+    Create(0, 0, n_ - 1);
+}
+
+ui32 SubsegmentTree::MaxIndex(ui32 l, ui32 r) const {
+    return 1 + MaxIndexFun(0, 0, n_ - 1, l - 1, r - 1);
+}
+
+void SubsegmentTree::Create(ui32 p, ui32 t_left, ui32 t_right) {
+    if (t_right == t_left) {
+        index_[p] = t_left;
+    } else {
+        ui32 t_mid = (t_left + t_right) / 2;
+        Create(p * 2 + 1, t_left, t_mid);
+        Create(p * 2 + 2, t_mid + 1, t_right);
+        if (arr_[index_[p * 2 + 1]] >= arr_[index_[p * 2 + 2]]) {
+            index_[p] = index_[p * 2 + 1];
+        } else {
+            index_[p] = index_[p * 2 + 2];
+        }
+    }
+}
+
+ui32 SubsegmentTree::MaxIndexFun(ui32 p, ui32 t_left, ui32 t_right,
+                                             ui32 l, ui32 r) const {
+    if (l <= t_left && t_right <= r) {
+        return index_[p];
+    }
+    if (t_right < l || t_left > r) {
+        return 0;
+    }
+    ui32 t_mid = (t_left + t_right) / 2;
+    ui32 left_index = MaxIndexFun(p * 2 + 1, t_left, t_mid, l, r);
+    ui32 right_index = MaxIndexFun(p * 2 + 2, t_mid + 1, t_right, l, r);
+    if (arr_[left_index] >= arr_[right_index]) {
+        return left_index;
+    }
+    return right_index;
+}
+
+int main() {
+    ui32 n, k, l, r;
+    cin >> n;
+    SubsegmentTree segment_tree(n, cin);
+    cin >> k;
+    for (ui32 i = 0; i < k; ++i) {
+        cin >> l >> r;
+        cout << segment_tree.MaxIndex(l, r) << endl;
+    }
+    return 0;
+}
