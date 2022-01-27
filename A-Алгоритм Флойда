@@ -1,0 +1,69 @@
+#include <iostream>
+#include <vector>
+
+using std::istream;
+using std::ostream;
+using std::vector;
+using std::endl;
+using std::cin;
+using std::cout;
+
+class Graph {
+ public:
+    explicit Graph(uint32_t n);
+    void ReadFromStream(istream& stream);
+    void WriteToStream(ostream& stream);
+
+    void Floyd();
+
+ private:
+    uint32_t vertices_number_;
+    vector<vector<int32_t>> matrix_;
+};
+
+Graph::Graph(uint32_t n) : vertices_number_(n),
+                                matrix_(n, vector<int32_t>(n, 0)) {
+}
+
+void Graph::ReadFromStream(istream& stream) {
+    int32_t value;
+    for (uint32_t i = 0; i < vertices_number_; i++) {
+        for (uint32_t j = 0; j < vertices_number_; j++) {
+            stream >> value;
+            matrix_[i][j] = value;
+        }
+    }
+}
+
+void Graph::WriteToStream(std::ostream& stream) {
+    for (uint32_t i = 0; i < vertices_number_; i++) {
+        for (uint32_t j = 0; j < vertices_number_; j++) {
+            stream << matrix_[i][j] << ' ';
+        }
+        stream << endl;
+    }
+}
+
+void Graph::Floyd() {
+    for (uint32_t k = 0; k < vertices_number_; k++) {
+        for (uint32_t i = 0; i < vertices_number_; i++) {
+            for (uint32_t j = 0; j < vertices_number_; j++) {
+                if (matrix_[i][j] > matrix_[i][k] + matrix_[k][j]) {
+                    matrix_[i][j] = matrix_[i][k] + matrix_[k][j];
+                }
+            }
+        }
+    }
+}
+
+int main() {
+    uint32_t n;
+    cin >> n;
+
+    Graph graph(n);
+    graph.ReadFromStream(cin);
+    graph.Floyd();
+    graph.WriteToStream(cout);
+
+    return 0;
+}
