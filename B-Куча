@@ -1,0 +1,76 @@
+#include <iostream>
+#include <vector>
+
+class Heap {
+ public:
+    explicit Heap(uint32_t n, std::istream& stream);
+    void Print(std::ostream& stream);
+
+    void HeapSort();
+
+ private:
+    uint32_t size_;
+    std::vector<int32_t> vector_;
+
+    void SiftDown(uint32_t root, uint32_t bottom);
+    void Swap(uint32_t i, uint32_t j);
+};
+
+Heap::Heap(uint32_t n, std::istream& stream) : size_(n), vector_(n) {
+    for (uint32_t i = 0; i < size_; i++) {
+        stream >> vector_[i];
+    }
+}
+
+void Heap::Print(std::ostream& stream) {
+    for (uint32_t i = 0; i < size_; i++) {
+        stream << vector_[i] << ' ';
+    }
+    stream << std::endl;
+}
+
+void Heap::HeapSort() {
+    for (uint32_t i = size_ / 2; i > 0; i--) {
+        SiftDown(i - 1, size_);
+    }
+    for (uint32_t i = size_ - 1; i > 0; i--) {
+        Swap(0, i);
+        SiftDown(0, i);
+    }
+}
+
+void Heap::SiftDown(uint32_t root, uint32_t bottom) {
+    uint32_t max_child, left, right;
+    while (root < bottom) {
+        max_child = root;
+        left = 2 * root + 1;
+        right = 2 * root + 2;
+        if (left < bottom && vector_[left] > vector_[max_child]) {
+            max_child = left;
+        }
+        if (right < bottom && vector_[right] > vector_[max_child]) {
+            max_child = right;
+        }
+        if (max_child == root) {
+            break;
+        }
+        Swap(root, max_child);
+        root = max_child;
+    }
+}
+
+void Heap::Swap(uint32_t i, uint32_t j) {
+    int32_t tmp = vector_[i];
+    vector_[i] = vector_[j];
+    vector_[j] = tmp;
+}
+
+int main() {
+    uint32_t n;
+    std::cin >> n;
+    Heap heap(n, std::cin);
+    heap.HeapSort();
+    heap.Print(std::cout);
+    return 0;
+}
+
